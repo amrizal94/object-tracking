@@ -1,4 +1,8 @@
 # object-tracking
+<p>
+   <img src="https://drive.google.com/file/d/1hXFSEIUfHNFbkxyFH5_3FbO30E1uwv8M/view?usp=sharing">
+</p>
+
 <div align="center">
    <img width="2%" />
    <a href="https://www.linkedin.com/in/ari-rizal-3306b0112/">
