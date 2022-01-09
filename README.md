@@ -39,8 +39,8 @@ Clone repo and install [requirements.txt](https://github.com/ultralytics/yolov5/
 [**Python>=3.6.0**](https://www.python.org/) environment.
 
 ```bash
-git clone https://github.com/ultralytics/yolov5  # clone
-cd yolov5
+git clone https://github.com/amrizal94/object-tracking.git  # clone
+cd object-tracking
 pip install -r requirements.txt  # install
 ```
    
