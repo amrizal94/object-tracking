@@ -44,7 +44,7 @@ cd object-tracking
 pip install -r requirements.txt  # install
 ```
    
-** IF FIND ERROR "AttributeError: module 'cv2' has no attribute 'legacy'"
+## IF FIND ERROR "AttributeError: module 'cv2' has no attribute 'legacy'"
 ```bash
 pip install opencv-contrib-python
 ```
