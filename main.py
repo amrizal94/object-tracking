@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import pyshine as ps
+import background_box as ps
 from win32 import win32api
 import win32.lib.win32con as win32con
 import time
