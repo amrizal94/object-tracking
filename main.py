@@ -7,7 +7,8 @@ import time
 import serial
 import serial.tools.list_ports
 import base64
-from logo_jpg_byte import byteform
+from logo_jpg_byte import byteform as logo
+from cameranotfound import byteform as camNotFound
 
 vcW = 640
 vcH = 480
@@ -18,9 +19,24 @@ arduinoPort = []
 arduino = None
 bbox = None
 
-logo_jpeg = base64.b64decode(byteform)
+logo_jpeg = base64.b64decode(logo)
 jpeg_as_np = np.frombuffer(logo_jpeg, dtype=np.uint8)
 logo = cv2.imdecode(jpeg_as_np, flags=1)
+
+camNotFound_jpeg = base64.b64decode(camNotFound)
+jpeg_as_np = np.frombuffer(camNotFound_jpeg, dtype=np.uint8)
+camNotFound = cv2.imdecode(jpeg_as_np, flags=1)
+
+source = 0
+
+
+def testDevice(source):
+    cap = cv2.VideoCapture(source)
+    success, img = cap.read()
+    return type(img).__module__ == np.__name__
+
+
+cap = cv2.VideoCapture(source)
 
 
 def drawBox(img, bbox):
@@ -64,11 +80,11 @@ def drawBox(img, bbox):
 
 
 def mouse_evt_SSC(event, x, y, flags, param):
-    global runCam, runApp, cap, tracker, arduino
+    global runCam, runApp, tracker, arduino
     if boxSS[0] < x and x < boxSS[2] and boxSS[1] < y and y < boxSS[3]:
         win32api.SetCursor(win32api.LoadCursor(0, win32con.IDC_HAND))
         if event == cv2.EVENT_LBUTTONDOWN:
-            cap = cv2.VideoCapture(0)
+            # cap = cv2.VideoCapture(0)
             tracker = cv2.legacy.TrackerCSRT_create()
             runCam = not runCam
 
@@ -79,7 +95,7 @@ def mouse_evt_SSC(event, x, y, flags, param):
 
     elif 0 < x and x < 640 and 100 < y and y < 580:
         if event == cv2.EVENT_LBUTTONUP and bbox:
-            cap = cv2.VideoCapture(0)
+            # cap = cv2.VideoCapture(0)
             tracker = cv2.legacy.TrackerCSRT_create()
             runCam = not runCam
 
@@ -95,7 +111,7 @@ def mouse_evt_SSC(event, x, y, flags, param):
 
 
 def mouse_evt(event, x, y, flags, param):
-    global runCam, runApp, flip, image_coordinates, leftClickOnDown, arduino, bbox
+    global runCam, runApp, flip, image_coordinates, leftClickOnDown, arduino, bbox, source, cap
     if boxSS[0] < x and x < boxSS[2] and boxSS[1] < y and y < boxSS[3]:
         win32api.SetCursor(win32api.LoadCursor(0, win32con.IDC_HAND))
         if event == cv2.EVENT_LBUTTONDOWN:
@@ -111,6 +127,16 @@ def mouse_evt(event, x, y, flags, param):
         win32api.SetCursor(win32api.LoadCursor(0, win32con.IDC_HAND))
         if event == cv2.EVENT_LBUTTONDOWN:
             flip = not flip
+
+    elif boxCC[0] < x and x < boxCC[2] and boxCC[1] < y and y < boxCC[3]:
+        win32api.SetCursor(win32api.LoadCursor(0, win32con.IDC_HAND))
+        if event == cv2.EVENT_LBUTTONDOWN:
+            source += 1
+            while testDevice(source) is False:
+                source += 1
+                if source == 10:
+                    source = 0
+            cap = cv2.VideoCapture(source)
 
     elif 0 < x and x < 640 and 100 < y and y < 580:
         # Record starting (x,y) coordinates on left mouse button click
@@ -188,7 +214,11 @@ while runApp:
 
         blank_image = np.zeros((vcH+200, vcW, 3), np.uint8)
         blank_image[0:100, 530:632] = logo
-        blank_image[100:580, 0:640] = img
+        # print(type(img).__module__ == np.__name__)
+        try:
+            blank_image[100:580, 0:640] = img
+        except:
+            blank_image[100:580, 0:640] = camNotFound
 
         connection(blank_image)
 
@@ -199,6 +229,8 @@ while runApp:
 
         blank_image, boxFlip = ps.putBText(blank_image, 'Flip', text_offset_x=20, text_offset_y=blank_image.shape[
                                            0]-35, vspace=10, hspace=10, font_scale=1.0, background_RGB=(90, 128, 242), text_RGB=(255, 250, 250))
+        blank_image, boxCC = ps.putBText(blank_image, 'Change Camera', text_offset_x=20, text_offset_y=blank_image.shape[
+                                         0]-85, vspace=10, hspace=10, font_scale=1.0, background_RGB=(20, 10, 204), text_RGB=(255, 250, 250))
         blank_image, boxSS = ps.putBText(blank_image, 'Stop' if runCam else 'Start', text_offset_x=blank_image.shape[
                                          1]-100, text_offset_y=blank_image.shape[0]-85, vspace=10, hspace=10, font_scale=1.0, background_RGB=(20, 210, 4), text_RGB=(255, 250, 250))
         blank_image, boxClose = ps.putBText(
@@ -216,6 +248,8 @@ while runApp:
                         cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
 
         cv2.putText(blank_image, f'FPS: {int(fps)}', (10, 20),
+                    cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
+        cv2.putText(blank_image, f'COM: {source}', (10, 80),
                     cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
         cv2.imshow("Object Tracking", blank_image)
         cv2.setMouseCallback("Object Tracking", mouse_evt)
