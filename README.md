@@ -1,7 +1,7 @@
 
 <div align="center">
    <p>
-      <img src="https://ibb.co/sjZpSRN">
+      ![Image](https://ibb.co/sjZpSRN)\
    </p>
 
    <div align="center">
