@@ -1,7 +1,7 @@
 
 <div align="center">
    <p>
-      ![Image](https://ibb.co/sjZpSRN)\
+      <img width="850" src="https://github.com/amrizal94/object-tracking/blob/main/Screenshot_1.png">
    </p>
 
    <div align="center">
