@@ -1,3 +1,4 @@
+#IMPORTING LIBRARY
 import cv2
 import numpy as np
 import background_box as ps
@@ -7,12 +8,14 @@ import time
 import serial
 import serial.tools.list_ports
 import base64
-from logo_jpg_byte import byteform as logo
-from cameranotfound import byteform as camNotFound
+from logo_jpg_byte import byteform as logo # Memanggil bytes yang berupa gambar logo
+from cameranotfound import byteform as camNotFound # Memanggil bytes yang berupa gambar camera not found, mencegah error jika camera lost connect
 
+# SETTING RESOLUSI GAMBAR KAMERA
 vcW = 640
 vcH = 480
 
+# INITIAL BEBERAPA LIBRARY GLOBAL
 leftClickOnDown = False
 image_coordinates = [0, 0, 0, 0]
 arduinoPort = []
@@ -29,16 +32,16 @@ camNotFound = cv2.imdecode(jpeg_as_np, flags=1)
 
 source = 0
 
+cap = cv2.VideoCapture(source)
 
+# TEST DEVICE CAMERA, UNTUK MENGETAHUI KAMERA YANG TERKONEKSI DAN BISA DIGUNAKAN
 def testDevice(source):
     cap = cv2.VideoCapture(source)
     success, img = cap.read()
     return type(img).__module__ == np.__name__
 
 
-cap = cv2.VideoCapture(source)
-
-
+# MEMBERI TANDA BERUPA KOTAK WARNA PINK SEBAGAI OBEJEK TRACKING DAN MEMBERI NILAI POSISI TRAGET
 def drawBox(img, bbox):
     x, y, w, h = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
     xc = x+w//2
@@ -59,18 +62,20 @@ def drawBox(img, bbox):
     cv2.circle(img, (xx, yy), int(jari2), (255, 255, 255), 2)
     num = ""
     if yc > yy - jari2 and yc < yy + jari2 and xc > xx - jari2 and xc < xx + jari2:
-        num = "H"
+        num = "H" # JIKA POSISI ON TRAGET
     else:
+        # JIKA POSISI TRAGET ADA DI ATAS / DIBAWAH
         if yc < yy - jari2:
-            num += "A"
+            num += "A" # TARGET ADA DIATAS (NAIK)
         elif yc > yy + jari2:
-            num += "B"
-
+            num += "B" # TARGET ADA DIBAWAH (TURUN)
+            
+        # JIKA POSISI TRAGET ADA DI KANAN / KIRI
         if xc < xx - jari2:
-            num += "C"
+            num += "C" # TARGET ADA DISEBALAH KANAN 
 
         elif xc > xx + jari2:
-            num += "D"
+            num += "D" # TARGET ADA DISEBALAH KIRI 
 
     # drawInfo(img, "DATA", 3, num, True)
     cv2.putText(img, f'DATA: {num}', (10, 40),
@@ -78,13 +83,12 @@ def drawBox(img, bbox):
 
     return num
 
-
+# MEMBUAT FUNGSI KETIKA MOUSE MENGEKLIK GAMBAR TOMBOL START, STOP DAN CLOSE
 def mouse_evt_SSC(event, x, y, flags, param):
     global runCam, runApp, tracker, arduino
     if boxSS[0] < x and x < boxSS[2] and boxSS[1] < y and y < boxSS[3]:
         win32api.SetCursor(win32api.LoadCursor(0, win32con.IDC_HAND))
         if event == cv2.EVENT_LBUTTONDOWN:
-            # cap = cv2.VideoCapture(0)
             tracker = cv2.legacy.TrackerCSRT_create()
             runCam = not runCam
 
@@ -95,7 +99,6 @@ def mouse_evt_SSC(event, x, y, flags, param):
 
     elif 0 < x and x < 640 and 100 < y and y < 580:
         if event == cv2.EVENT_LBUTTONUP and bbox:
-            # cap = cv2.VideoCapture(0)
             tracker = cv2.legacy.TrackerCSRT_create()
             runCam = not runCam
 
@@ -187,7 +190,7 @@ def connection(img):
             cv2.putText(img, f"COM: {listToStr} {'is available' if len(arduinoPort) < 2 else 'are availables'} ", (
                 10, 60), cv2.FONT_HERSHEY_PLAIN, 1, (255, 255, 255), 1)
         img, boxConnection = ps.putBText(img, 'Disconnect' if arduino else 'Connect', text_offset_x=20,
-                                         text_offset_y=blank_image.shape[0]-85, vspace=10, hspace=10, font_scale=1.0, background_RGB=(252, 3, 211), text_RGB=(255, 250, 250))
+                                         text_offset_y=blank_image.shape[0]-35, vspace=10, hspace=10, font_scale=1.0, background_RGB=(252, 3, 211), text_RGB=(255, 250, 250))
 
 
 runApp = True
@@ -227,8 +230,8 @@ while runApp:
                         ), (image_coordinates[2], image_coordinates[3])
             cv2.rectangle(blank_image, pt1, pt2, (255, 0, 255), 3, 1)
 
-        blank_image, boxFlip = ps.putBText(blank_image, 'Flip', text_offset_x=20, text_offset_y=blank_image.shape[
-                                           0]-35, vspace=10, hspace=10, font_scale=1.0, background_RGB=(90, 128, 242), text_RGB=(255, 250, 250))
+        blank_image, boxFlip = ps.putBText(blank_image, 'Flip', text_offset_x=320, text_offset_y=blank_image.shape[
+                                           0]-85, vspace=10, hspace=10, font_scale=1.0, background_RGB=(90, 128, 242), text_RGB=(255, 250, 250))
         blank_image, boxCC = ps.putBText(blank_image, 'Change Camera', text_offset_x=20, text_offset_y=blank_image.shape[
                                          0]-85, vspace=10, hspace=10, font_scale=1.0, background_RGB=(20, 10, 204), text_RGB=(255, 250, 250))
         blank_image, boxSS = ps.putBText(blank_image, 'Stop' if runCam else 'Start', text_offset_x=blank_image.shape[
