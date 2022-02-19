@@ -24,19 +24,28 @@ Label(tabWifi, text="Device IP", width=10, anchor='w').grid(row=2)
 Label(tabWifi, text="Device Port", width=10, anchor='w').grid(row=3)
 
 # Using readlines()
-file1 = open('settings.txt', 'r')
-Lines = file1.readlines()
+try:
+  file1 = open('settings.txt', 'r')
+  Lines = file1.readlines()
+except OSError:
+  open('settings.txt', 'w')
 
-if Lines[0] != '':
-  v = DoubleVar()
-  eW1 = Entry(tabWifi, textvariable=v)
-  v.set(str(Lines[0]).strip())
+if len(Lines)-1 >= 2:
+  if Lines[0] != '':
+    v = DoubleVar()
+    eW1 = Entry(tabWifi, textvariable=v)
+    v.set(str(Lines[0]).strip())
+  else:
+    eW1 = Entry(tabWifi)
 else:
   eW1 = Entry(tabWifi)
-if Lines[1] != '':
-  v = DoubleVar()
-  eW2 = Entry(tabWifi, textvariable=v)
-  v.set(str(Lines[1]).strip())
+if len(Lines)-1 >= 2:
+  if Lines[1] != '':
+    v = DoubleVar()
+    eW2 = Entry(tabWifi, textvariable=v)
+    v.set(str(Lines[1]).strip())
+  else:
+    eW2 = Entry(tabWifi)
 else:
   eW2 = Entry(tabWifi)
 eW1.grid(row=2, column=1, columnspan = 2)
@@ -44,11 +53,13 @@ eW2.grid(row=3, column=1, columnspan = 2)
 
 Label(tabUsb, text="Connect over USB").grid(row=1, columnspan = 3, pady=10)
 Label(tabUsb, text="Source (0...n)", width=10, anchor='w').grid(row=2)
-
-if Lines[2] !='':
-  v = DoubleVar()
-  eU1 = Entry(tabUsb, textvariable=v)
-  v.set(int(str(Lines[2]).strip()))
+if len(Lines)-1 >= 2:
+  if Lines[2] !='':
+    v = DoubleVar()
+    eU1 = Entry(tabUsb, textvariable=v)
+    v.set(int(str(Lines[2]).strip()))
+  else:
+    eU1 = Entry(tabUsb)
 else:
   eU1 = Entry(tabUsb)
 eU1.grid(row=2, column=1, columnspan = 2)    
@@ -107,13 +118,16 @@ def cam_flip():
     
 def cam_run():
   global source, runCam
-  if (eW1.get() =='' or eW2.get() =='') and eU1.get() =='':
-    messagebox.showerror("No Cam", "Please input ip and port or source")
-    return
   if bSS['text'] == 'Start':
     if note_book.select()=='.!notebook.!frame':
+      if (eW1.get() =='' or eW2.get() ==''):
+        messagebox.showerror("No Cam", "Please input ip and port")
+        return
       source = f'http://{eW1.get()}:{eW2.get()}/video'
     elif note_book.select()=='.!notebook.!frame2':
+      if eU1.get() =='':
+        messagebox.showerror("No Cam", "Please input source com camera 0 ... n")
+        return
       if not str.isdigit(eU1.get()):
         messagebox.showwarning("showwarning", "Source must be number")
         return
@@ -126,9 +140,12 @@ def cam_run():
     eW2['state']="disabled"
     eU1['state']="disabled"
     with open('settings.txt', 'w') as f:
-      f.write(f'{eW1.get()}\n')
-      f.write(f'{eW2.get()}\n')
-      f.write(f'{eU1.get()}\n')
+      line1 = ' ' if eW1.get() =='' else eW1.get()
+      f.write(f'{line1}\n')
+      line2 = ' ' if eW2.get() =='' else eW2.get()
+      f.write(f'{line2}\n')
+      line3 = ' ' if eU1.get() =='' else eU1.get()
+      f.write(f'{line3}')
       f.close()
         
   else:
