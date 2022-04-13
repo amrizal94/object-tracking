@@ -48,4 +48,6 @@ pip install -r requirements.txt  # install
 ```bash
 pip install opencv-contrib-python
 ```
+
+## Remember tested on windows
   
